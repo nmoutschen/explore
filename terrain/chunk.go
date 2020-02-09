@@ -24,14 +24,16 @@ func NewChunkFromData(x int32, y int32, data [32][32]Tile, modified bool) *Chunk
 }
 
 //ID returns a unique identifier for the chunk
+//
+//See ChunkPosToID for more information about the transformation applied.
 func (c *Chunk) ID() uint64 {
-	//Stores c.Y in the 32 most significant bits and c.X in the 32 least significant bits.
-	//This can then be used as a unique identifier for each chunk.
-	x, y := uint32(c.X), uint32(c.Y)
-	return uint64(y)<<32 | uint64(x)
+	return ChunkPosToID(c.X, c.Y)
 }
 
 //RawData returns the data as an array of bytes
+//
+//This is used for transmitting data about a specific chunk in a more efficient format. A JSON representation of a 32x32 2-dimensional
+//array with each value containing 1 byte would take between 2113 and 4161 bytes, while this can be sent with 1368 bytes in base64 format.
 func (c *Chunk) RawData() (val [32 * 32]byte) {
 	for xi := 0; xi < 32; xi++ {
 		for yi := 0; yi < 32; yi++ {
@@ -43,6 +45,22 @@ func (c *Chunk) RawData() (val [32 * 32]byte) {
 }
 
 //ChunkIDToPos map a chunk ID into x, y coordinates
+//
+//This is the reverse of ChunkPosToID. See ChunkPosToID for more information about the transformation applied.
 func ChunkIDToPos(id uint64) (x, y int32) {
 	return int32(id & 0xFFFFFFFF), int32(id >> 32)
+}
+
+//ChunkPosToID map x, y coordinates to an unique identifier
+//
+//This transforms the bits from x and y coordinates into a 64 bits unsigned integer. The y position is stored in the 32 most significant
+//bits while the x position is stored in the 32 least significant bit.
+//
+//If any coordinate is negative, this uses the 2-complement representation. For example, (x, y) coordinates (0, -1) map to an identifier
+//of 0xFFFF_FFFF_0000_0000.
+//
+//This is the reverse of ChunkIDToPos
+func ChunkPosToID(x, y int32) (id uint64) {
+	xu, yu := uint32(x), uint32(y)
+	return uint64(yu)<<32 | uint64(xu)
 }

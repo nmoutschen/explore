@@ -5,6 +5,32 @@ import (
 	"testing"
 )
 
+var mapTestCases []struct {
+	X, Y int32
+	ID   uint64
+} = []struct {
+	X, Y int32
+	ID   uint64
+}{
+	{0x00000000, 0x00000000, 0x0000_0000_0000_0000},
+	//+1
+	{0x00000001, 0x00000000, 0x0000_0000_0000_0001},
+	{0x00000000, 0x00000001, 0x0000_0001_0000_0000},
+	{0x00000001, 0x00000001, 0x0000_0001_0000_0001},
+	//-1
+	{-0x00000001, 0x00000000, 0x0000_0000_FFFF_FFFF},
+	{0x00000000, -0x00000001, 0xFFFF_FFFF_0000_0000},
+	{-0x00000001, -0x00000001, 0xFFFF_FFFF_FFFF_FFFF},
+	//Max int32
+	{0x7FFFFFFF, 0x00000000, 0x0000_0000_7FFF_FFFF},
+	{0x00000000, 0x7FFFFFFF, 0x7FFF_FFFF_0000_0000},
+	{0x7FFFFFFF, 0x7FFFFFFF, 0x7FFF_FFFF_7FFF_FFFF},
+	//Min int32
+	{-0x80000000, 0x00000000, 0x0000_0000_8000_0000},
+	{0x00000000, -0x80000000, 0x8000_0000_0000_0000},
+	{-0x80000000, -0x80000000, 0x8000_0000_8000_0000},
+}
+
 func BenchmarkNewChunk(b *testing.B) {
 	var y int32
 
@@ -62,30 +88,7 @@ func ExampleNewChunk() {
 }
 
 func TestNewChunk(t *testing.T) {
-	testCases := []struct {
-		X, Y int32
-		ID   uint64
-	}{
-		{0x00000000, 0x00000000, 0x0000_0000_0000_0000},
-		//+1
-		{0x00000001, 0x00000000, 0x0000_0000_0000_0001},
-		{0x00000000, 0x00000001, 0x0000_0001_0000_0000},
-		{0x00000001, 0x00000001, 0x0000_0001_0000_0001},
-		//-1
-		{-0x00000001, 0x00000000, 0x0000_0000_FFFF_FFFF},
-		{0x00000000, -0x00000001, 0xFFFF_FFFF_0000_0000},
-		{-0x00000001, -0x00000001, 0xFFFF_FFFF_FFFF_FFFF},
-		//Max int32
-		{0x7FFFFFFF, 0x00000000, 0x0000_0000_7FFF_FFFF},
-		{0x00000000, 0x7FFFFFFF, 0x7FFF_FFFF_0000_0000},
-		{0x7FFFFFFF, 0x7FFFFFFF, 0x7FFF_FFFF_7FFF_FFFF},
-		//Min int32
-		{-0x80000000, 0x00000000, 0x0000_0000_8000_0000},
-		{0x00000000, -0x80000000, 0x8000_0000_0000_0000},
-		{-0x80000000, -0x80000000, 0x8000_0000_8000_0000},
-	}
-
-	for i, tc := range testCases {
+	for i, tc := range mapTestCases {
 		chunk := NewChunk(tc.X, tc.Y)
 
 		if chunk.X != tc.X {
@@ -148,33 +151,19 @@ func TestChunkRawData(t *testing.T) {
 }
 
 func TestChunkIDToPos(t *testing.T) {
-	testCases := []struct {
-		X, Y int32
-		ID   uint64
-	}{
-		{0x00000000, 0x00000000, 0x0000_0000_0000_0000},
-		//+1
-		{0x00000001, 0x00000000, 0x0000_0000_0000_0001},
-		{0x00000000, 0x00000001, 0x0000_0001_0000_0000},
-		{0x00000001, 0x00000001, 0x0000_0001_0000_0001},
-		//-1
-		{-0x00000001, 0x00000000, 0x0000_0000_FFFF_FFFF},
-		{0x00000000, -0x00000001, 0xFFFF_FFFF_0000_0000},
-		{-0x00000001, -0x00000001, 0xFFFF_FFFF_FFFF_FFFF},
-		//Max int32
-		{0x7FFFFFFF, 0x00000000, 0x0000_0000_7FFF_FFFF},
-		{0x00000000, 0x7FFFFFFF, 0x7FFF_FFFF_0000_0000},
-		{0x7FFFFFFF, 0x7FFFFFFF, 0x7FFF_FFFF_7FFF_FFFF},
-		//Min int32
-		{-0x80000000, 0x00000000, 0x0000_0000_8000_0000},
-		{0x00000000, -0x80000000, 0x8000_0000_0000_0000},
-		{-0x80000000, -0x80000000, 0x8000_0000_8000_0000},
-	}
-
-	for i, tc := range testCases {
+	for i, tc := range mapTestCases {
 		x, y := ChunkIDToPos(tc.ID)
 		if tc.X != x || tc.Y != y {
 			t.Errorf("ChunkIDToPos(%016x) = (%08x, %08x); want (%08x, %08x) for test case %d", tc.ID, x, y, tc.X, tc.Y, i)
+		}
+	}
+}
+
+func TestChunkPosToID(t *testing.T) {
+	for i, tc := range mapTestCases {
+		id := ChunkPosToID(tc.X, tc.Y)
+		if tc.ID != id {
+			t.Errorf("ChunkPosToID(%08x, %08x) = %016x; want %016x for test case %d", tc.X, tc.Y, id, tc.ID, i)
 		}
 	}
 }
