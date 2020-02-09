@@ -70,7 +70,7 @@ func (g *Generator) getTile(x, y float64) Tile {
 	height := g.getHeight(x, y)
 	humidity := g.getHumidity(x, y)
 
-	return GetTile(height, humidity)
+	return GetTile(x, y, height, humidity)
 }
 
 //NewChunk generates a new chunk

@@ -17,7 +17,7 @@ func TestGetTile(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tile := GetTile(tc.Height, tc.Humidity)
+		tile := GetTile(0.0, 0.0, tc.Height, tc.Humidity)
 		if tile != tc.Tile {
 			t.Errorf("GetTile(%.02f, %.02f) = %x; want %x", tc.Height, tc.Humidity, tile, tc.Tile)
 		}
@@ -26,18 +26,18 @@ func TestGetTile(t *testing.T) {
 
 func BenchmarkGetTileBestCase(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		GetTile(0.0, 0.0)
+		GetTile(0.0, 0.0, 0.0, 0.0)
 	}
 }
 
 func BenchmarkGetTileWorstCase(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		GetTile(1.0, 1.0)
+		GetTile(0.0, 0.0, 1.0, 1.0)
 	}
 }
 
 func BenchmarkGetTileAvgCase(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		GetTile(0.5, 0.5)
+		GetTile(0.0, 0.0, 0.5, 0.5)
 	}
 }
