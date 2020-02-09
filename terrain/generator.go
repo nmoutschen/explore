@@ -10,41 +10,29 @@ type Generator struct {
 	noise opensimplex.Noise
 }
 
-const (
-	heightPass1Scale   float64 = 64
-	heightPass2Scale   float64 = 16
-	heightPass3Scale   float64 = 4
-	heightPass4Scale   float64 = 1
-	heightPass1OffsetX float64 = 0
-	heightPass1OffsetY float64 = 0
-	heightPass2OffsetX float64 = 0x0F8000
-	heightPass2OffsetY float64 = 0x7FFFFF
-	heightPass3OffsetX float64 = 0x19FFFF
-	heightPass3OffsetY float64 = -0xAF0000
-	heightPass4OffsetX float64 = 0
-	heightPass4OffsetY float64 = 0
-	heightPass1Weight  float64 = 1.
-	heightPass2Weight  float64 = 1. / 4
-	heightPass3Weight  float64 = 1. / 16
-	heightPass4Weight  float64 = 1. / 16
+//genPass represents details for a single map generation pass
+type genPass struct {
+	Scale   float64
+	Weight  float64
+	OffsetX float64
+	OffsetY float64
+}
 
-	humidityPass1Scale   float64 = 256
-	humidityPass2Scale   float64 = 64
-	humidityPass3Scale   float64 = 8
-	humidityPass4Scale   float64 = 1
-	humidityPass1OffsetX float64 = 0
-	humidityPass1OffsetY float64 = 0
-	humidityPass2OffsetX float64 = 0x7FFFFF
-	humidityPass2OffsetY float64 = 0x7FFFFF
-	humidityPass3OffsetX float64 = 0x19FFFF
-	humidityPass3OffsetY float64 = 0xC9FFFF
-	humidityPass4OffsetX float64 = -0x39FFFF
-	humidityPass4OffsetY float64 = 0xA9FFFF
-	humidityPass1Weight  float64 = 1.
-	humidityPass2Weight  float64 = 1. / 4
-	humidityPass3Weight  float64 = 1. / 8
-	humidityPass4Weight  float64 = 1. / 16
-)
+//heightPasses contain details about the passes for generating the height map
+var heightPasses [4]genPass = [4]genPass{
+	{64., 1., 0., 0.},
+	{16., 1. / 4, 0x0F8000, 0x7FFFFF},
+	{4., 1. / 16, 0x19FFFF, -0xAF0000},
+	{1., 1. / 16, 0, 0},
+}
+
+//humidityPasses contain details about the passes for generating the humidity map
+var humidityPasses [4]genPass = [4]genPass{
+	{256., 1., 0., 0.},
+	{64., 1. / 4, 0x7FFFFF, 0x7FFFFF},
+	{8., 1. / 8, 0x19FFFF, 0xC9FFFF},
+	{1., 1. / 16, -0x39FFFF, 0xA9FFFF},
+}
 
 //NewGenerator creates a new generator with the given seed
 func NewGenerator(seed int64) *Generator {
@@ -58,23 +46,23 @@ func NewGenerator(seed int64) *Generator {
 
 //getHeight returns the height at a specific position
 func (g *Generator) getHeight(x, y float64) (val float64) {
-	val1 := (g.noise.Eval2(x/heightPass1Scale+heightPass1OffsetX, y/heightPass1Scale+heightPass1OffsetY)/2 + 0.5) * heightPass1Weight
-	val2 := (g.noise.Eval2(x/heightPass2Scale+heightPass2OffsetX, y/heightPass2Scale+heightPass2OffsetY)/2 + 0.5) * heightPass2Weight
-	val3 := (g.noise.Eval2(x/heightPass3Scale+heightPass3OffsetX, y/heightPass3Scale+heightPass3OffsetY)/2 + 0.5) * heightPass3Weight
-	val4 := (g.noise.Eval2(x/heightPass4Scale+heightPass4OffsetX, y/heightPass4Scale+heightPass4OffsetX)/2 + 0.5) * heightPass4Weight
+	var weight float64
+	for _, pass := range heightPasses {
+		val += (g.noise.Eval2(x/pass.Scale+pass.OffsetX, y/pass.Scale+pass.OffsetY)/2 + 0.5) * pass.Weight
+		weight += pass.Weight
+	}
 
-	val = (val1 + val2 + val3 + val4) / (heightPass1Weight + heightPass2Weight + heightPass3Weight + heightPass4Weight)
-	return val
+	return val / weight
 }
 
 func (g *Generator) getHumidity(x, y float64) (val float64) {
-	val1 := (g.noise.Eval2(x/humidityPass1Scale+humidityPass1OffsetX, y/humidityPass1Scale+humidityPass1OffsetY)/2 + 0.5) * humidityPass1Weight
-	val2 := (g.noise.Eval2(x/humidityPass2Scale+humidityPass2OffsetX, y/humidityPass2Scale+humidityPass2OffsetY)/2 + 0.5) * humidityPass2Weight
-	val3 := (g.noise.Eval2(x/humidityPass3Scale+humidityPass3OffsetX, y/humidityPass3Scale+humidityPass3OffsetY)/2 + 0.5) * humidityPass3Weight
-	val4 := (g.noise.Eval2(x/humidityPass4Scale+humidityPass4OffsetX, y/humidityPass4Scale+humidityPass4OffsetY)/2 + 0.5) * humidityPass4Weight
+	var weight float64
+	for _, pass := range humidityPasses {
+		val += (g.noise.Eval2(x/pass.Scale+pass.OffsetX, y/pass.Scale+pass.OffsetY)/2 + 0.5) * pass.Weight
+		weight += pass.Weight
+	}
 
-	val = (val1 + val2 + val3 + val4) / (humidityPass1Weight + humidityPass2Weight + humidityPass3Weight + humidityPass4Weight)
-	return val
+	return val / weight
 }
 
 //getTile returns a tile at the given x, y coordinate
