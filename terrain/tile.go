@@ -35,8 +35,12 @@ const (
 	tileLookupSize  int = (tileMaxHeight + 1) * (tileMaxHumidity + 1)
 )
 
-var tileHeightThresholds [tileMaxHeight]float64 = [tileMaxHeight]float64{1. / 5, 2. / 5, 3. / 5, 4. / 5}
-var tileHumidityThresholds [tileMaxHumidity]float64 = [tileMaxHumidity]float64{1. / 7, 2. / 7, 3. / 7, 4. / 7, 5. / 7, 6. / 7}
+var tileHeightThresholds [tileMaxHeight]float64 = [tileMaxHeight]float64{
+	2. / 6, 3. / 6, 4. / 6, 5. / 6,
+}
+var tileHumidityThresholds [tileMaxHumidity]float64 = [tileMaxHumidity]float64{
+	1. / 7, 2. / 7, 3. / 7, 4. / 7, 5. / 7, 6. / 7,
+}
 
 //TileLookup is a lookup map for every height and humidity levels
 var TileLookup [tileLookupSize]Tile = [tileLookupSize]Tile{

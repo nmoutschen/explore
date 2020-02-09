@@ -30,16 +30,20 @@ const (
 
 	humidityPass1Scale   float64 = 256
 	humidityPass2Scale   float64 = 64
-	humidityPass3Scale   float64 = 4
+	humidityPass3Scale   float64 = 8
+	humidityPass4Scale   float64 = 1
 	humidityPass1OffsetX float64 = 0
 	humidityPass1OffsetY float64 = 0
-	humidityPass2OffsetX float64 = 0x7FFFFFFF
-	humidityPass2OffsetY float64 = 0x7FFFFFFF
-	humidityPass3OffsetX float64 = 0x19FFFFFF
-	humidityPass3OffsetY float64 = 0xC9FFFFFF
+	humidityPass2OffsetX float64 = 0x7FFFFF
+	humidityPass2OffsetY float64 = 0x7FFFFF
+	humidityPass3OffsetX float64 = 0x19FFFF
+	humidityPass3OffsetY float64 = 0xC9FFFF
+	humidityPass4OffsetX float64 = -0x39FFFF
+	humidityPass4OffsetY float64 = 0xA9FFFF
 	humidityPass1Weight  float64 = 1.
-	humidityPass2Weight  float64 = 1. / 2
-	humidityPass3Weight  float64 = 1. / 4
+	humidityPass2Weight  float64 = 1. / 4
+	humidityPass3Weight  float64 = 1. / 8
+	humidityPass4Weight  float64 = 1. / 16
 )
 
 //NewGenerator creates a new generator with the given seed
@@ -67,8 +71,9 @@ func (g *Generator) getHumidity(x, y float64) (val float64) {
 	val1 := (g.noise.Eval2(x/humidityPass1Scale+humidityPass1OffsetX, y/humidityPass1Scale+humidityPass1OffsetY)/2 + 0.5) * humidityPass1Weight
 	val2 := (g.noise.Eval2(x/humidityPass2Scale+humidityPass2OffsetX, y/humidityPass2Scale+humidityPass2OffsetY)/2 + 0.5) * humidityPass2Weight
 	val3 := (g.noise.Eval2(x/humidityPass3Scale+humidityPass3OffsetX, y/humidityPass3Scale+humidityPass3OffsetY)/2 + 0.5) * humidityPass3Weight
+	val4 := (g.noise.Eval2(x/humidityPass4Scale+humidityPass4OffsetX, y/humidityPass4Scale+humidityPass4OffsetY)/2 + 0.5) * humidityPass4Weight
 
-	val = (val1 + val2 + val3) / (humidityPass1Weight + humidityPass2Weight + humidityPass3Weight)
+	val = (val1 + val2 + val3 + val4) / (humidityPass1Weight + humidityPass2Weight + humidityPass3Weight + humidityPass4Weight)
 	return val
 }
 
