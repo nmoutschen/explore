@@ -14,21 +14,21 @@ type Tile uint8
 
 //Tile types
 const (
-	tileWater               Tile = iota
-	tileFrozenWater         Tile = iota
-	tileTropicalRainForest  Tile = iota
-	tileTropicalForest      Tile = iota
-	tileGrassland           Tile = iota
-	tileDesert              Tile = iota
-	tileTemperateRainForest Tile = iota
-	tileTemperateForest     Tile = iota
-	tileTemperateDesert     Tile = iota
-	tileTaiga               Tile = iota
-	tileShrubland           Tile = iota
-	tileSnow                Tile = iota
-	tileTundra              Tile = iota
-	tileBare                Tile = iota
-	tileScorched            Tile = iota
+	tileWater               Tile = 0x00
+	tileFrozenWater         Tile = 0x01
+	tileTropicalRainForest  Tile = 0x02
+	tileTropicalForest      Tile = 0x03
+	tileGrassland           Tile = 0x04
+	tileDesert              Tile = 0x05
+	tileTemperateRainForest Tile = 0x06
+	tileTemperateForest     Tile = 0x07
+	tileTemperateDesert     Tile = 0x08
+	tileTaiga               Tile = 0x09
+	tileShrubland           Tile = 0x0A
+	tileSnow                Tile = 0x0B
+	tileTundra              Tile = 0x0C
+	tileBare                Tile = 0x0D
+	tileScorched            Tile = 0x0E
 
 	tileMaxHeight   int = 4
 	tileMaxHumidity int = 6
