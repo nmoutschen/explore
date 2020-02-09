@@ -4,7 +4,7 @@ import (
 	"github.com/ojrac/opensimplex-go"
 )
 
-//Generator represents a terrain generator
+//Generator represents a terrain generator with a specific seed
 type Generator struct {
 	seed  int64
 	noise opensimplex.Noise
@@ -73,7 +73,10 @@ func (g *Generator) getTile(x, y float64) Tile {
 	return GetTile(height, humidity)
 }
 
-//NewChunk returns a new chunk using the provided generator
+//NewChunk generates a new chunk
+//
+//This uses OpenSimplex noise to generate a height and humidity map for all 32*32 tiles in the chunk, which are then looked up in
+//threshold arrays to find the biome corresponding to the tile.
 func (g *Generator) NewChunk(x int32, y int32) *Chunk {
 	var data [32][32]Tile
 
@@ -91,4 +94,6 @@ func (g *Generator) NewChunk(x int32, y int32) *Chunk {
 }
 
 //DefaultGenerator is a default generator
+//
+//This generator is initalized with a seed of 0.0 to ensure consistent results.
 var DefaultGenerator *Generator = NewGenerator(0.0)

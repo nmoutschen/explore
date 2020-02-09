@@ -9,11 +9,15 @@ type Chunk struct {
 }
 
 //NewChunk generates a new chunk using the default generator
+//
+//See Generator.NewChunk to understand how the chunk generation algorithm works.
 func NewChunk(x int32, y int32) *Chunk {
 	return DefaultGenerator.NewChunk(x, y)
 }
 
-//NewChunkFromData creates a new Chunk based
+//NewChunkFromData creates a new Chunk based on existing data rather than using the terrain generator
+//
+//Use this function if you have pre-generated a chunk and recover it from storage, or if you have user modification for that chunk.
 func NewChunkFromData(x int32, y int32, data [32][32]Tile, modified bool) *Chunk {
 	return &Chunk{
 		X:        x,
