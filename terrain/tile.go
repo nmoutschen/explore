@@ -1,10 +1,18 @@
 package terrain
 
-//Tile represents the different types of tiles that can be used in game
+//Tile represents the different types of tiles that can be used in game.
 //
-//Tile types are based on the Whittaker classification with some modifications.
+//They are stored as a 8-bit unsigned integer (uint8), with the four least significant bits used to store the
+//biome type and the four most significant bits used for structure information. For example, you can create a tile
+//with a desert biome and a road by using a logical OR operation: terrain.BiomeDesert | terrain.StructureRoad.
 //
-// | Height\Moisture | 6 (wet)      | 5                     | 4                    | 3                | 2               | 1                | 0 (dry)          |
+//Tiles cannot have multiple biomes or structures. Therefore, terrain.BiomeFrozenWater | terrain.BiomeGrassland == terrain.BiomeDesert
+//
+//Tile types are based on the Whittaker classification with some modifications. The following table is used to map
+//discrete humidity and height values to biomes. An array of thresholds map continuous values for height and humidity
+//from the noise generator into the discrete values contained in the following table.
+//
+// | Height\Humidity | 6 (wet)      | 5                     | 4                    | 3                | 2               | 1                | 0 (dry)          |
 // | 4 (high)        | Frozen Water | Snow                  | Snow                 | Snow             | Tundra          | Bare             | Scorched         |
 // | 3               | Frozen Water | Taiga                 | Taiga                | Shrubland        | Shrubland       | Temperate Desert | Temperate Desert |
 // | 2               | Water        | Temperate Rain Forest | Temperate Forest     | Temperate Forest | Grassland       | Grassland        | Temperate Desert |
@@ -14,25 +22,33 @@ type Tile uint8
 
 //Tile types
 const (
-	tileWater               Tile = 0x00
-	tileFrozenWater         Tile = 0x01
-	tileTropicalRainForest  Tile = 0x02
-	tileTropicalForest      Tile = 0x03
-	tileGrassland           Tile = 0x04
-	tileDesert              Tile = 0x05
-	tileTemperateRainForest Tile = 0x06
-	tileTemperateForest     Tile = 0x07
-	tileTemperateDesert     Tile = 0x08
-	tileTaiga               Tile = 0x09
-	tileShrubland           Tile = 0x0A
-	tileSnow                Tile = 0x0B
-	tileTundra              Tile = 0x0C
-	tileBare                Tile = 0x0D
-	tileScorched            Tile = 0x0E
+	//Biome types
+	BiomeWater               Tile = 0x00
+	BiomeFrozenWater         Tile = 0x01
+	BiomeTropicalRainForest  Tile = 0x02
+	BiomeTropicalForest      Tile = 0x03
+	BiomeGrassland           Tile = 0x04
+	BiomeDesert              Tile = 0x05
+	BiomeTemperateRainForest Tile = 0x06
+	BiomeTemperateForest     Tile = 0x07
+	BiomeTemperateDesert     Tile = 0x08
+	BiomeTaiga               Tile = 0x09
+	BiomeShrubland           Tile = 0x0A
+	BiomeSnow                Tile = 0x0B
+	BiomeTundra              Tile = 0x0C
+	BiomeBare                Tile = 0x0D
+	BiomeScorched            Tile = 0x0E
+	//0x0F is reserved for future use
+
+	//Structure types
+	StructureEmpty Tile = 0x00
+	StructureRoad  Tile = 0x10
+	StructureHouse Tile = 0x20
+	//0x30-0xF0 are reserved for future use
 
 	tileMaxHeight   int = 4
 	tileMaxHumidity int = 6
-	tileLookupSize  int = (tileMaxHeight + 1) * (tileMaxHumidity + 1)
+	biomeLookupSize int = (tileMaxHeight + 1) * (tileMaxHumidity + 1)
 )
 
 var tileHeightThresholds [tileMaxHeight]float64 = [tileMaxHeight]float64{
@@ -42,18 +58,18 @@ var tileHumidityThresholds [tileMaxHumidity]float64 = [tileMaxHumidity]float64{
 	1. / 7, 2. / 7, 3. / 7, 4. / 7, 5. / 7, 6. / 7,
 }
 
-//TileLookup is a lookup map for every height and humidity levels
-var TileLookup [tileLookupSize]Tile = [tileLookupSize]Tile{
+//BiomeLookup is a lookup map for every height and humidity levels
+var BiomeLookup [biomeLookupSize]Tile = [biomeLookupSize]Tile{
 	//Height = 0
-	tileWater, tileWater, tileWater, tileWater, tileWater, tileWater, tileWater,
+	BiomeWater, BiomeWater, BiomeWater, BiomeWater, BiomeWater, BiomeWater, BiomeWater,
 	//Height = 1
-	tileDesert, tileGrassland, tileTropicalForest, tileTropicalForest, tileTropicalRainForest, tileTropicalRainForest, tileWater,
+	BiomeDesert, BiomeGrassland, BiomeTropicalForest, BiomeTropicalForest, BiomeTropicalRainForest, BiomeTropicalRainForest, BiomeWater,
 	//Height = 2
-	tileTemperateDesert, tileGrassland, tileGrassland, tileTemperateForest, tileTemperateForest, tileTemperateRainForest, tileWater,
+	BiomeTemperateDesert, BiomeGrassland, BiomeGrassland, BiomeTemperateForest, BiomeTemperateForest, BiomeTemperateRainForest, BiomeWater,
 	//Height = 3
-	tileTemperateDesert, tileTemperateDesert, tileShrubland, tileShrubland, tileTaiga, tileTaiga, tileFrozenWater,
+	BiomeTemperateDesert, BiomeTemperateDesert, BiomeShrubland, BiomeShrubland, BiomeTaiga, BiomeTaiga, BiomeFrozenWater,
 	//Height = 4
-	tileScorched, tileBare, tileTundra, tileSnow, tileSnow, tileSnow, tileFrozenWater,
+	BiomeScorched, BiomeBare, BiomeTundra, BiomeSnow, BiomeSnow, BiomeSnow, BiomeFrozenWater,
 }
 
 //GetTile returns a tile for the given height and humidity
@@ -80,5 +96,5 @@ func GetTile(height, humidity float64) Tile {
 		}
 	}
 
-	return TileLookup[iHeight*(tileMaxHumidity+1)+iHumidity]
+	return BiomeLookup[iHeight*(tileMaxHumidity+1)+iHumidity]
 }

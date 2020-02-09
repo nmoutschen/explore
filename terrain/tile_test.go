@@ -10,10 +10,10 @@ func TestGetTile(t *testing.T) {
 		Humidity float64
 		Tile     Tile
 	}{
-		{0.0, 0.0, tileWater},
-		{1.0, 0.0, tileScorched},
-		{1.0, 1.0, tileFrozenWater},
-		{0.0, 1.0, tileWater},
+		{0.0, 0.0, BiomeWater},
+		{1.0, 0.0, BiomeScorched},
+		{1.0, 1.0, BiomeFrozenWater},
+		{0.0, 1.0, BiomeWater},
 	}
 
 	for _, tc := range testCases {
